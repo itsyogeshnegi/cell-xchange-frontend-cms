@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import API from '../../utils/axios';
 import { openProtectedFile } from '../../utils/download';
+import { FileUploadField, MultipleFileUploadField } from '../../components/FileUpload';
+
 
 const PurchaseForm = () => {
   const queryClient = useQueryClient();
@@ -306,22 +308,30 @@ const PurchaseForm = () => {
 
                 {/* Identity documents uploads */}
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 border-t border-slate-200 dark:border-slate-800 pt-3 text-[10px]">
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-500 block">Seller Photo</label>
-                    <input type="file" accept="image/*" onChange={(e) => setCustomerPhoto(e.target.files[0])} />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-500 block">Aadhaar Front</label>
-                    <input type="file" accept="image/*" onChange={(e) => setAadhaarFront(e.target.files[0])} />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-500 block">Aadhaar Back</label>
-                    <input type="file" accept="image/*" onChange={(e) => setAadhaarBack(e.target.files[0])} />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-500 block">PAN Image</label>
-                    <input type="file" accept="image/*" onChange={(e) => setPanImage(e.target.files[0])} />
-                  </div>
+                  <FileUploadField
+                    label="Seller Photo"
+                    id="seller-photo-upload"
+                    file={customerPhoto}
+                    setFile={setCustomerPhoto}
+                  />
+                  <FileUploadField
+                    label="Aadhaar Front"
+                    id="aadhaar-front-upload"
+                    file={aadhaarFront}
+                    setFile={setAadhaarFront}
+                  />
+                  <FileUploadField
+                    label="Aadhaar Back"
+                    id="aadhaar-back-upload"
+                    file={aadhaarBack}
+                    setFile={setAadhaarBack}
+                  />
+                  <FileUploadField
+                    label="PAN Image"
+                    id="pan-image-upload"
+                    file={panImage}
+                    setFile={setPanImage}
+                  />
                 </div>
               </div>
             </div>
@@ -546,16 +556,12 @@ const PurchaseForm = () => {
           </div>
 
           {/* Device Images */}
-          <div className="space-y-1">
-            <label className="font-bold text-slate-500 block">Device Verification Photos</label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => setDeviceImages(e.target.files)}
-              className="w-full text-slate-450 border border-dashed border-slate-200 dark:border-slate-800 p-2.5 rounded-lg"
-            />
-          </div>
+          <MultipleFileUploadField
+            label="Device Verification Photos"
+            id="device-photos-upload"
+            files={deviceImages}
+            setFiles={setDeviceImages}
+          />
         </div>
       </div>
 

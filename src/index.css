@@ -112,3 +112,50 @@
   border-color: #334155 !important;
 }
 
+/* Explicit style mappings for custom/invalid tailwind classes in both light & dark modes */
+.text-slate-450 {
+  color: #64748b !important; /* Muted secondary text (slate-500) */
+}
+.text-slate-905 {
+  color: #0f172a !important; /* Dark text (slate-900) */
+}
+.text-slate-550 {
+  color: #475569 !important; /* Medium dark text (slate-600) */
+}
+.text-slate-650 {
+  color: #334155 !important; /* Slate text (slate-700) */
+}
+.bg-slate-55 {
+  background-color: #f8fafc !important; /* Slate-50 background */
+}
+.bg-slate-105 {
+  background-color: #f1f5f9 !important; /* Slate-100 background */
+}
+
+/* Dark mode overrides for custom classes */
+.dark .text-slate-450,
+.dark .dark\:text-slate-450 {
+  color: #cbd5e1 !important; /* Muted light text (slate-300) */
+}
+.dark .text-slate-905,
+.dark .dark\:text-slate-905 {
+  color: #ffffff !important; /* Pure white text */
+}
+.dark .text-slate-550,
+.dark .dark\:text-slate-550 {
+  color: #e2e8f0 !important; /* Slate-200 equivalent */
+}
+.dark .text-slate-650,
+.dark .dark\:text-slate-650 {
+  color: #f1f5f9 !important; /* Slate-100 equivalent */
+}
+.dark .bg-slate-55,
+.dark .dark\:bg-slate-55 {
+  background-color: #0f172a !important; /* Slate-900 background */
+}
+.dark .bg-slate-105,
+.dark .dark\:bg-slate-105 {
+  background-color: #1e293b !important; /* Slate-800 background */
+}
+
+

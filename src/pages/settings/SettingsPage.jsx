@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings, Save, UserPlus, Image, ShieldAlert, Check } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import API from '../../utils/axios';
+import { FileUploadField } from '../../components/FileUpload';
 
 const SettingsPage = () => {
   const queryClient = useQueryClient();
@@ -177,21 +178,13 @@ const SettingsPage = () => {
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="font-bold text-slate-500">Shop Logo (A4/Thermal headers)</label>
-              <div className="flex items-center gap-4">
-                {settings?.logoUrl && (
-                  <img src={settings.logoUrl} alt="Store Logo" className="h-10 w-10 object-contain bg-white rounded border" />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  disabled={!isAdmin}
-                  onChange={(e) => setLogoFile(e.target.files[0])}
-                  className="text-[10px]"
-                />
-              </div>
-            </div>
+            <FileUploadField
+              label="Shop Logo (A4/Thermal headers)"
+              id="shop-logo-upload"
+              file={logoFile || settings?.logoUrl}
+              setFile={setLogoFile}
+              disabled={!isAdmin}
+            />
           </div>
 
           <div className="space-y-1">

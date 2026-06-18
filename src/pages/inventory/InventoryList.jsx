@@ -19,6 +19,7 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import API from '../../utils/axios';
 import { openProtectedFile } from '../../utils/download';
+import { MultipleFileUploadField, ExcelFileUploadField } from '../../components/FileUpload';
 
 const InventoryList = () => {
   const queryClient = useQueryClient();
@@ -731,16 +732,12 @@ const InventoryList = () => {
               </div>
 
               {/* Image files upload */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Device Gallery Images</label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => setImageFiles(e.target.files)}
-                  className="w-full text-xs text-slate-550 border border-dashed border-slate-300 dark:border-slate-800 rounded-lg p-3 cursor-pointer file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100"
-                />
-              </div>
+              <MultipleFileUploadField
+                label="Device Gallery Images"
+                id="device-gallery-images"
+                files={imageFiles}
+                setFiles={setImageFiles}
+              />
 
               {/* Action buttons */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-850 flex justify-end gap-2 bg-slate-50 dark:bg-slate-900/50 p-4 -mx-6 -mb-6">
@@ -790,12 +787,11 @@ const InventoryList = () => {
                 </div>
               )}
 
-              <input
-                type="file"
-                accept=".xlsx, .xls"
-                required
-                onChange={(e) => setImportFile(e.target.files[0])}
-                className="w-full text-xs text-slate-550 border border-dashed border-slate-300 dark:border-slate-800 rounded-lg p-4 cursor-pointer"
+              <ExcelFileUploadField
+                label="Select Excel Sheet"
+                id="excel-file-import"
+                file={importFile}
+                setFile={setImportFile}
               />
 
               <div className="pt-3 flex justify-end gap-2">

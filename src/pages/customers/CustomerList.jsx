@@ -11,9 +11,11 @@ import {
   AlertCircle,
   FolderOpen,
   FileText,
+  Upload,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import API from '../../utils/axios';
+import { FileUploadField } from '../../components/FileUpload';
 
 const CustomerList = () => {
   const queryClient = useQueryClient();
@@ -428,45 +430,30 @@ const CustomerList = () => {
 
               {/* Document Scans */}
               <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-850 pt-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Customer Photo</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setCustomerPhoto(e.target.files[0])}
-                    className="text-[10px] text-slate-550 cursor-pointer"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PAN Card image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setPanImage(e.target.files[0])}
-                    className="text-[10px] text-slate-550 cursor-pointer"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Aadhaar Card Front</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setAadhaarFront(e.target.files[0])}
-                    className="text-[10px] text-slate-550 cursor-pointer"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Aadhaar Card Back</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setAadhaarBack(e.target.files[0])}
-                    className="text-[10px] text-slate-550 cursor-pointer"
-                  />
-                </div>
+                <FileUploadField
+                  label="Customer Photo"
+                  id="customer-photo-upload"
+                  file={customerPhoto}
+                  setFile={setCustomerPhoto}
+                />
+                <FileUploadField
+                  label="PAN Card Image"
+                  id="pan-image-upload"
+                  file={panImage}
+                  setFile={setPanImage}
+                />
+                <FileUploadField
+                  label="Aadhaar Card Front"
+                  id="aadhaar-front-upload"
+                  file={aadhaarFront}
+                  setFile={setAadhaarFront}
+                />
+                <FileUploadField
+                  label="Aadhaar Card Back"
+                  id="aadhaar-back-upload"
+                  file={aadhaarBack}
+                  setFile={setAadhaarBack}
+                />
               </div>
 
               {/* Actions */}

@@ -10,7 +10,6 @@ import {
   FileText,
   BarChart3,
   Settings,
-  History,
   LogOut,
   X,
 } from 'lucide-react';
@@ -29,7 +28,6 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'CMS Website', path: '/admin/cms', icon: FileText, roles: ['admin'] },
     { name: 'Reports', path: '/admin/reports', icon: FileText, roles: ['admin'] },
     { name: 'Analytics', path: '/admin/analytics', icon: BarChart3, roles: ['admin'] },
-    { name: 'Audit Logs', path: '/admin/audit-logs', icon: History, roles: ['admin'] },
     { name: 'Shop Settings', path: '/admin/settings', icon: Settings, roles: ['admin'] },
   ];
 

@@ -14,6 +14,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import API from '../../utils/axios';
+import { MultipleFileUploadField } from '../../components/FileUpload';
 
 const CMSDashboard = () => {
   const queryClient = useQueryClient();
@@ -699,16 +700,12 @@ const CMSDashboard = () => {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Product Public Images</label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => setProdImages(e.target.files)}
-                  className="w-full text-slate-450 border border-dashed border-slate-200 dark:border-slate-800 p-3 rounded"
-                />
-              </div>
+              <MultipleFileUploadField
+                label="Product Public Images"
+                id="product-public-images"
+                files={prodImages}
+                setFiles={setProdImages}
+              />
 
               <div className="pt-4 border-t border-slate-100 dark:border-slate-850 flex justify-end gap-2 bg-slate-50 dark:bg-slate-900/50 p-4 -mx-6 -mb-6">
                 <button
