@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UploadCloud, X, Eye, Image as ImageIcon, FileSpreadsheet, AlertCircle } from 'lucide-react';
+import { UploadCloud, X, Eye, Image as ImageIcon, FileSpreadsheet, AlertCircle, Camera, RefreshCw } from 'lucide-react';
 
 // Shared Lightbox Modal component for instant document preview
 export const FilePreviewModal = ({ src, alt, onClose }) => {
@@ -31,7 +31,189 @@ export const FilePreviewModal = ({ src, alt, onClose }) => {
   );
 };
 
-// 1. Single File Upload Card with Drag-and-Drop
+// 0. Live Camera Capture Modal
+export const CameraModal = ({ isOpen, onClose, onCapture }) => {
+  const [stream, setStream] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [facingMode, setFacingMode] = useState('environment'); // environment = back camera, user = front camera
+  const [devices, setDevices] = useState([]);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let activeStream = null;
+
+    const startCamera = async () => {
+      try {
+        // Enumerate devices first to see if camera switching is supported
+        const allDevices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = allDevices.filter(device => device.kind === 'videoinput');
+        setDevices(videoDevices);
+
+        // Standard constraint configuration
+        const constraints = {
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        };
+
+        const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+        activeStream = newStream;
+        setStream(newStream);
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = newStream;
+        }
+      } catch (err) {
+        console.error("Camera access error:", err);
+        alert("Camera access denied or device not found. Please verify permissions.");
+        onClose();
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isOpen, facingMode]);
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+
+      // Set canvas size to match live video stream feed resolution
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      setCapturedImage(dataUrl);
+    }
+  };
+
+  const savePhoto = () => {
+    if (capturedImage) {
+      fetch(capturedImage)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], `live-photo-${Date.now()}.jpg`, { type: "image/jpeg" });
+          onCapture(file);
+          handleClose();
+        })
+        .catch(err => {
+          console.error("Error creating file from captured image:", err);
+        });
+    }
+  };
+
+  const handleClose = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setStream(null);
+    setCapturedImage(null);
+    onClose();
+  };
+
+  const toggleFacingMode = () => {
+    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col h-[75vh] max-h-[550px] animate-in fade-in zoom-in-95 duration-200">
+        
+        {/* Header */}
+        <div className="px-5 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+          <span className="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Take Live Photo</span>
+          <button type="button" onClick={handleClose} className="text-slate-400 hover:text-white transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Video stream view */}
+        <div className="flex-1 bg-black relative flex items-center justify-center overflow-hidden">
+          {capturedImage ? (
+            <img src={capturedImage} alt="Captured preview" className="max-w-full max-h-full object-contain" />
+          ) : (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
+          )}
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
+
+        {/* Bottom controls */}
+        <div className="p-4 border-t border-slate-850 bg-slate-950/60 flex flex-col items-center gap-3">
+          {capturedImage ? (
+            <div className="flex gap-2.5 w-full">
+              <button
+                type="button"
+                onClick={() => setCapturedImage(null)}
+                className="flex-1 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 py-2 px-4 rounded-xl text-xs font-semibold transition-all"
+              >
+                Retake
+              </button>
+              <button
+                type="button"
+                onClick={savePhoto}
+                className="flex-1 bg-primary-600 hover:bg-primary-500 text-white py-2 px-4 rounded-xl text-xs font-bold transition-all shadow-md shadow-primary-950/10"
+              >
+                Use Photo
+              </button>
+            </div>
+          ) : (
+            <div className="flex justify-between items-center w-full max-w-[240px]">
+              {/* Toggle camera orientation (front/back) */}
+              <button
+                type="button"
+                onClick={toggleFacingMode}
+                disabled={devices.length <= 1}
+                className="p-2.5 bg-slate-800 hover:bg-slate-750 disabled:opacity-40 text-slate-200 rounded-full transition-all border border-slate-700"
+                title="Toggle camera front/back"
+              >
+                <RefreshCw size={14} />
+              </button>
+
+              {/* Take photo trigger shutter */}
+              <button
+                type="button"
+                onClick={capturePhoto}
+                className="p-1 bg-white hover:bg-slate-100 rounded-full transition-all flex items-center justify-center border-2 border-slate-800"
+              >
+                <div className="w-10 h-10 bg-rose-500 rounded-full hover:scale-95 transition-all flex items-center justify-center">
+                  <Camera size={18} className="text-white" />
+                </div>
+              </button>
+
+              {/* Spacing alignment placeholder */}
+              <div className="w-[36px]" />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 1. Single File Upload Card with Drag-and-Drop + Live Webcam
 export const FileUploadField = ({
   label,
   id,
@@ -44,6 +226,7 @@ export const FileUploadField = ({
   const [preview, setPreview] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
 
@@ -167,24 +350,40 @@ export const FileUploadField = ({
             )}
           </div>
         ) : (
-          <label
-            htmlFor={id}
-            className={`flex flex-col items-center justify-center p-3 border-2 border-dashed rounded-xl cursor-pointer transition-all text-center
-              ${dragActive 
-                ? "border-primary-500 bg-primary-500/5 dark:bg-primary-500/10 scale-[1.01]" 
-                : "border-slate-250 dark:border-slate-800 hover:border-primary-500 dark:hover:border-primary-500 bg-white/50 hover:bg-slate-50 dark:bg-slate-900/20 dark:hover:bg-slate-900/40"
-              }
-              ${disabled ? "pointer-events-none opacity-50" : ""}
-            `}
-          >
-            <UploadCloud 
-              className={`mb-1 transition-colors ${dragActive ? "text-primary-500" : "text-slate-400 dark:text-slate-500"}`} 
-              size={18} 
-            />
-            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
-              {dragActive ? "Drop to upload" : "Select image"}
-            </span>
-          </label>
+          <div className="flex gap-2 w-full">
+            {/* Click to upload slot */}
+            <label
+              htmlFor={id}
+              className={`flex-1 flex flex-col items-center justify-center p-3 border-2 border-dashed rounded-xl cursor-pointer transition-all text-center group
+                ${dragActive 
+                  ? "border-primary-500 bg-primary-500/5 dark:bg-primary-500/10 scale-[1.01]" 
+                  : "border-slate-250 dark:border-slate-800 hover:border-primary-500 dark:hover:border-primary-500 bg-white/50 hover:bg-slate-50 dark:bg-slate-900/20 dark:hover:bg-slate-900/40"
+                }
+                ${disabled ? "pointer-events-none opacity-50" : ""}
+              `}
+            >
+              <UploadCloud 
+                className={`mb-1 transition-colors ${dragActive ? "text-primary-500" : "text-slate-400 dark:text-slate-500 group-hover:text-primary-500"}`} 
+                size={18} 
+              />
+              <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary-500 transition-colors">
+                {dragActive ? "Drop files" : "Select File"}
+              </span>
+            </label>
+
+            {/* Click to capture live webcam photo */}
+            <button
+              type="button"
+              onClick={() => setShowCamera(true)}
+              disabled={disabled}
+              className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-primary-500 dark:hover:border-primary-500 bg-white/50 hover:bg-slate-50 dark:bg-slate-900/20 dark:hover:bg-slate-900/40 rounded-xl cursor-pointer transition-all text-center group"
+            >
+              <Camera className="mb-1 text-slate-400 group-hover:text-primary-500 transition-colors" size={18} />
+              <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary-500 transition-colors">
+                Camera
+              </span>
+            </button>
+          </div>
         )}
 
         {error && (
@@ -202,11 +401,17 @@ export const FileUploadField = ({
           onClose={() => setShowLightbox(false)}
         />
       )}
+
+      <CameraModal
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={validateAndSetFile}
+      />
     </div>
   );
 };
 
-// 2. Multiple File Upload Grid with Drag-and-Drop and Lightbox
+// 2. Multiple File Upload Grid + Live Camera Capture options
 export const MultipleFileUploadField = ({
   label,
   id,
@@ -219,6 +424,7 @@ export const MultipleFileUploadField = ({
   const [previews, setPreviews] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
 
@@ -227,14 +433,12 @@ export const MultipleFileUploadField = ({
       setPreviews([]);
       return;
     }
-    // Extract previews for local File objects or remote image strings
     const newPreviews = Array.from(files).map(file => {
       if (typeof file === 'string') return file;
       return URL.createObjectURL(file);
     });
     setPreviews(newPreviews);
     
-    // Revoke object URLs on unmount
     return () => {
       newPreviews.forEach(p => {
         if (p.startsWith('blob:')) {
@@ -274,7 +478,6 @@ export const MultipleFileUploadField = ({
     }
 
     if (validFiles.length > 0) {
-      // Merge with existing files
       const existingArray = files ? Array.from(files) : [];
       const updatedList = [...existingArray, ...validFiles];
       setFiles(updatedList);
@@ -349,64 +552,88 @@ export const MultipleFileUploadField = ({
 
         {hasFiles ? (
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2.5">
-            {previews.map((preview, idx) => {
-              const fileObj = files[idx];
-              const name = typeof fileObj === 'string' ? fileObj.split('/').pop() : fileObj?.name;
-              
-              return (
-                <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 shadow-sm flex items-center justify-center">
-                  <img
-                    src={preview}
-                    alt={`Preview ${idx + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition-opacity duration-200">
+            {previews.map((preview, idx) => (
+              <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 shadow-sm flex items-center justify-center">
+                <img
+                  src={preview}
+                  alt={`Preview ${idx + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition-opacity duration-200">
+                  <button
+                    type="button"
+                    onClick={() => setLightboxIndex(idx)}
+                    className="p-1 bg-white/20 hover:bg-white/40 text-white rounded-lg transition-all scale-90 hover:scale-100"
+                    title="Preview details"
+                  >
+                    <Eye size={12} />
+                  </button>
+                  {!disabled && (
                     <button
                       type="button"
-                      onClick={() => setLightboxIndex(idx)}
-                      className="p-1 bg-white/20 hover:bg-white/40 text-white rounded-lg transition-all scale-90 hover:scale-100"
-                      title="Preview details"
+                      onClick={() => removeFile(idx)}
+                      className="p-1 bg-rose-500/80 hover:bg-rose-500 text-white rounded-lg transition-all scale-90 hover:scale-100"
+                      title="Remove image"
                     >
-                      <Eye size={12} />
+                      <X size={12} />
                     </button>
-                    {!disabled && (
-                      <button
-                        type="button"
-                        onClick={() => removeFile(idx)}
-                        className="p-1 bg-rose-500/80 hover:bg-rose-500 text-white rounded-lg transition-all scale-90 hover:scale-100"
-                        title="Remove image"
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
 
+            {/* In-grid Add items slots: split between local browser upload and live camera capture */}
             {!disabled && (
-              <label
-                htmlFor={id}
-                className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer hover:bg-slate-100/50 dark:hover:bg-slate-900/60 transition-all group hover:border-primary-500"
-              >
-                <UploadCloud size={16} className="text-slate-400 group-hover:text-primary-500 transition-colors" />
-                <span className="text-[9px] font-bold text-slate-500 group-hover:text-primary-500 mt-0.5">Add</span>
-              </label>
+              <div className="aspect-square flex gap-1 bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden p-1 border border-slate-200 dark:border-slate-800/85">
+                <label
+                  htmlFor={id}
+                  className="flex-1 flex flex-col items-center justify-center rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 transition-all group"
+                  title="Browse local files"
+                >
+                  <UploadCloud size={14} className="text-slate-450 group-hover:text-primary-500 transition-colors" />
+                  <span className="text-[7.5px] font-bold text-slate-500 group-hover:text-primary-500 mt-0.5">Files</span>
+                </label>
+                <div className="w-[1px] bg-slate-200 dark:bg-slate-800 my-1" />
+                <button
+                  type="button"
+                  onClick={() => setShowCamera(true)}
+                  className="flex-1 flex flex-col items-center justify-center rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900 transition-all group"
+                  title="Take live photo"
+                >
+                  <Camera size={14} className="text-slate-450 group-hover:text-primary-500 transition-colors" />
+                  <span className="text-[7.5px] font-bold text-slate-500 group-hover:text-primary-500 mt-0.5">Camera</span>
+                </button>
+              </div>
             )}
           </div>
         ) : (
-          <label
-            htmlFor={id}
-            className={`flex flex-col items-center justify-center py-6 cursor-pointer text-center group ${disabled ? "pointer-events-none" : ""}`}
-          >
-            <UploadCloud className="text-slate-400 group-hover:text-primary-500 transition-colors mb-1.5" size={24} />
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <UploadCloud className="text-slate-450 mb-1.5" size={24} />
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-350">
               Drag & drop photos here
             </span>
-            <span className="text-[10px] text-slate-400 mt-0.5">
-              or click to browse local files
+            <span className="text-[10px] text-slate-400 mt-0.5 mb-3.5">
+              or use one of the options below
             </span>
-          </label>
+            <div className="flex gap-2">
+              <label
+                htmlFor={id}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-250 dark:border-slate-800 rounded-lg cursor-pointer text-[10px] font-bold text-slate-650 dark:text-slate-300 transition-all hover:scale-[1.02] shadow-sm shadow-slate-950/5"
+              >
+                <UploadCloud size={12} />
+                Browse Files
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowCamera(true)}
+                disabled={disabled}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-250 dark:border-slate-800 rounded-lg text-[10px] font-bold text-slate-650 dark:text-slate-300 transition-all hover:scale-[1.02] shadow-sm shadow-slate-950/5"
+              >
+                <Camera size={12} />
+                Take Photo
+              </button>
+            </div>
+          </div>
         )}
 
         {error && (
@@ -424,6 +651,12 @@ export const MultipleFileUploadField = ({
           onClose={() => setLightboxIndex(null)}
         />
       )}
+
+      <CameraModal
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={(file) => appendFiles([file])}
+      />
     </div>
   );
 };
