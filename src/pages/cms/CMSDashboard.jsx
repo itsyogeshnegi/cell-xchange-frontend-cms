@@ -105,6 +105,15 @@ const CMSDashboard = () => {
     },
   });
 
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: async ({ id, isPublished }) => {
+      await API.put(`/cms/products/${id}/toggle`, { isPublished });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['cmsProducts']);
+    },
+  });
+
   const handleOpenAddProduct = () => {
     setEditingProduct(null);
     setProdForm({
@@ -222,16 +231,6 @@ const CMSDashboard = () => {
             Homepage sections Copywriter
           </button>
         </div>
-
-        {activeTab === 'catalog' && (
-          <button
-            onClick={handleOpenAddProduct}
-            className="bg-primary-600 hover:bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-md shadow-primary-950/15"
-          >
-            <Plus size={14} />
-            Create Catalog Item
-          </button>
-        )}
       </div>
 
       {/* TAB 1: Catalog Products templates */}
@@ -254,9 +253,7 @@ const CMSDashboard = () => {
                       <th className="py-4 px-6">Product Title</th>
                       <th className="py-4 px-3">Specs Details</th>
                       <th className="py-4 px-3 text-right">Retail Listing Price</th>
-                      <th className="py-4 px-3 text-center">Featured</th>
-                      <th className="py-4 px-3 text-center">Store Visibility</th>
-                      <th className="py-4 px-6 text-center">Actions</th>
+                      <th className="py-4 px-6 text-center">Store Visibility</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-850/60 text-slate-700 dark:text-slate-300">
@@ -267,10 +264,10 @@ const CMSDashboard = () => {
                             <div 
                               className={`w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center font-bold text-slate-400 shrink-0 ${p.images && p.images.length > 0 ? 'cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all' : ''}`}
                               onClick={() => {
-                                if (p.images && p.images.length > 0) {
-                                  setPreviewImage(p.images[0]);
-                                  setPreviewTitle(`${p.title} Image`);
-                                }
+                                  if (p.images && p.images.length > 0) {
+                                    setPreviewImage(p.images[0]);
+                                    setPreviewTitle(`${p.title} Image`);
+                                  }
                               }}
                             >
                               {p.images && p.images.length > 0 ? (
@@ -294,45 +291,18 @@ const CMSDashboard = () => {
                         <td className="py-4 px-3 text-right font-bold text-slate-900 dark:text-white">
                           ₹{p.price.toLocaleString()}
                         </td>
-                        <td className="py-4 px-3 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            p.isFeatured
-                              ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-500'
-                              : 'bg-slate-100 dark:bg-slate-850 text-slate-400'
-                          }`}>
-                            {p.isFeatured ? 'Yes' : 'No'}
-                          </span>
-                        </td>
-                        <td className="py-4 px-3 text-center">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            p.isPublished
-                              ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-500'
-                              : 'bg-rose-100 dark:bg-rose-950/30 text-rose-500'
-                          }`}>
-                            {p.isPublished ? 'Published' : 'Hidden'}
-                          </span>
-                        </td>
                         <td className="py-4 px-6 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => handleOpenEditProduct(p)}
-                              className="p-1.5 text-slate-400 hover:text-amber-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-                              title="Edit Details"
-                            >
-                              <Edit size={14} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (confirm('Delete this listing template permanently?')) {
-                                  deleteProductMutation.mutate(p._id);
-                                }
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-rose-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-                              title="Delete template"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleVisibilityMutation.mutate({ id: p._id, isPublished: !p.isPublished })}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                              p.isPublished
+                                ? 'bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/40 text-emerald-500 border-emerald-500/20'
+                                : 'bg-rose-105 hover:bg-rose-200 dark:bg-rose-950/40 text-rose-500 border-rose-500/20'
+                            }`}
+                          >
+                            {p.isPublished ? 'Published (Show)' : 'Hidden (Hide)'}
+                          </button>
                         </td>
                       </tr>
                     ))}

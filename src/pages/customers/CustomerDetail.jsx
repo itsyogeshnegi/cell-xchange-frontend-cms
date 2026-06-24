@@ -27,6 +27,13 @@ const CustomerDetail = () => {
     queryKey: ['customerDetail', id],
     queryFn: async () => {
       const res = await API.get(`/customers/${id}`);
+      if (res.data && res.data.customer) {
+        return {
+          ...res.data.customer,
+          salesHistory: res.data.history?.sales || [],
+          purchaseHistory: res.data.history?.purchases || [],
+        };
+      }
       return res.data;
     },
   });
@@ -206,44 +213,6 @@ const CustomerDetail = () => {
                           </tr>
                         );
                       })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Purchases from Customer */}
-            <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center justify-between">
-                <span>Trade-in Vouchers (Purchased from Customer)</span>
-                <span className="text-[10px] text-slate-400">Total Inward History</span>
-              </h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                      <th className="pb-2">Voucher #</th>
-                      <th className="pb-2">Date</th>
-                      <th className="pb-2">Device Traded In</th>
-                      <th className="pb-2 text-right">Amount Paid</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-                    {!customer.purchaseHistory || customer.purchaseHistory.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="py-4 text-center text-slate-400">No trade-in purchases recorded for this customer</td>
-                      </tr>
-                    ) : (
-                      customer.purchaseHistory.map((p) => (
-                        <tr key={p._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
-                          <td className="py-2.5 font-semibold text-slate-900 dark:text-white">{p.purchaseNumber}</td>
-                          <td className="py-2.5">{new Date(p.createdAt).toLocaleDateString()}</td>
-                          <td className="py-2.5 truncate max-w-[200px]">
-                            {p.device ? `${p.device.brand} ${p.device.model} (${p.device.storage}GB)` : 'N/A'}
-                          </td>
-                          <td className="py-2.5 text-right font-bold text-emerald-500">₹{p.purchasePrice.toLocaleString()}</td>
-                        </tr>
-                      ))
                     )}
                   </tbody>
                 </table>

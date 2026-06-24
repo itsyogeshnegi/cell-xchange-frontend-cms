@@ -66,7 +66,6 @@ const ReportsPage = () => {
               className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2 rounded text-xs text-slate-800 dark:text-slate-200"
             >
               <option value="sales">Sales & Revenue</option>
-              <option value="purchases">Trade-in Purchases</option>
               <option value="profit">Net Profit Margins</option>
               <option value="inventory">Inventory Stock Valuation</option>
             </select>
@@ -173,47 +172,6 @@ const ReportsPage = () => {
               </>
             )}
 
-            {/* Purchase Summary */}
-            {reportType === 'purchases' && (
-              <>
-                <div className="glass-card p-6 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 block">Total Inward Outlay</span>
-                    <span className="text-2xl font-black text-slate-900 dark:text-white mt-1.5 block">
-                      ₹{summary.totalSpent?.toLocaleString() || 0}
-                    </span>
-                  </div>
-                  <div className="p-3 bg-primary-500/10 text-primary-500 rounded-xl">
-                    <DollarSign size={20} />
-                  </div>
-                </div>
-
-                <div className="glass-card p-6 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 block">Average Device Inward Price</span>
-                    <span className="text-2xl font-black text-emerald-500 mt-1.5 block">
-                      ₹{summary.averagePurchasePrice?.toLocaleString() || 0}
-                    </span>
-                  </div>
-                  <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
-                    <ShoppingCart size={20} />
-                  </div>
-                </div>
-
-                <div className="glass-card p-6 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-semibold text-slate-500 block">Trade-in Volume</span>
-                    <span className="text-2xl font-black text-amber-500 mt-1.5 block">
-                      {summary.purchaseCount || 0} Inwarded
-                    </span>
-                  </div>
-                  <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl">
-                    <Boxes size={20} />
-                  </div>
-                </div>
-              </>
-            )}
-
             {/* Profit Summary */}
             {reportType === 'profit' && (
               <>
@@ -314,17 +272,6 @@ const ReportsPage = () => {
                         <th className="py-4 px-6 text-right">Invoice Total</th>
                       </>
                     )}
-                    {reportType === 'purchases' && (
-                      <>
-                        <th className="py-4 px-6">Date</th>
-                        <th className="py-4 px-3">Voucher #</th>
-                        <th className="py-4 px-3">Seller Name</th>
-                        <th className="py-4 px-3">Device specifications</th>
-                        <th className="py-4 px-3 font-mono">IMEI / Serial</th>
-                        <th className="py-4 px-3">Payment Mode</th>
-                        <th className="py-4 px-6 text-right">Amount Paid</th>
-                      </>
-                    )}
                     {reportType === 'profit' && (
                       <>
                         <th className="py-4 px-6">Date</th>
@@ -366,17 +313,6 @@ const ReportsPage = () => {
                             <td className="py-3 px-3 text-right">₹{row.subTotal?.toLocaleString()}</td>
                             <td className="py-3 px-3 text-right text-slate-400">₹{row.gstAmount?.toLocaleString()}</td>
                             <td className="py-3 px-6 text-right font-bold text-primary-500">₹{row.total?.toLocaleString()}</td>
-                          </>
-                        )}
-                        {reportType === 'purchases' && (
-                          <>
-                            <td className="py-3 px-6">{row.date}</td>
-                            <td className="py-3 px-3 font-semibold">{row.voucherNo}</td>
-                            <td className="py-3 px-3">{row.customerName}</td>
-                            <td className="py-3 px-3">{row.device}</td>
-                            <td className="py-3 px-3 font-mono">{row.imei}</td>
-                            <td className="py-3 px-3 capitalize">{row.paymentMethod}</td>
-                            <td className="py-3 px-6 text-right font-bold text-emerald-500">₹{row.purchasePrice?.toLocaleString()}</td>
                           </>
                         )}
                         {reportType === 'profit' && (

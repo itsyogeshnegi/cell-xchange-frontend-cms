@@ -24,10 +24,8 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Inventory Stock', path: '/admin/inventory', icon: Smartphone, roles: ['admin', 'staff'] },
     { name: 'Customers (CRM)', path: '/admin/customers', icon: Users, roles: ['admin', 'staff'] },
     { name: 'Billing Sale', path: '/admin/sales', icon: CreditCard, roles: ['admin', 'staff'] },
-    { name: 'Purchase Inward', path: '/admin/purchases', icon: Download, roles: ['admin', 'staff'] },
     { name: 'CMS Website', path: '/admin/cms', icon: FileText, roles: ['admin'] },
     { name: 'Reports', path: '/admin/reports', icon: FileText, roles: ['admin'] },
-    { name: 'Analytics', path: '/admin/analytics', icon: BarChart3, roles: ['admin'] },
     { name: 'Shop Settings', path: '/admin/settings', icon: Settings, roles: ['admin'] },
   ];
 

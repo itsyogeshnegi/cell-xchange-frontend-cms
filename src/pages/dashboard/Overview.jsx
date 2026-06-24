@@ -64,8 +64,8 @@ const Overview = () => {
     );
   }
 
-  const { cards, recentPurchases, recentSales } = summary || {};
-  const { monthlyTrends, brandWiseStock, statusDistribution } = charts || {};
+  const { cards, recentSales } = summary || {};
+  const { monthlyTrends, brandWiseStock } = charts || {};
 
   // Color variables
   const COLORS = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
@@ -101,29 +101,32 @@ const Overview = () => {
 
       {/* 2. Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sales & Purchases Trends Chart */}
-        <div className="glass-panel p-6 rounded-xl lg:col-span-2">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4">Financial Volume Trends (6 Months)</h3>
+        {/* Sales trends Area Chart */}
+        <div className="glass-panel p-6 rounded-xl lg:col-span-2 space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Sales Revenue Trend</h3>
+              <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Monthly sales performance</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-primary-500"></span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-450 font-bold">Sales Revenue (₹)</span>
+            </div>
+          </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyTrends}>
+              <AreaChart data={monthlyTrends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#2563EB" stopOpacity={0.2}/>
                     <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
                   </linearGradient>
-                  <linearGradient id="colorPurchases" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
-                  </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" opacity={0.15} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" opacity={0.1} />
                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: '#0f172a', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                <Area type="monotone" dataKey="Sales" stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" />
-                <Area type="monotone" dataKey="Purchases" stroke="#F59E0B" strokeWidth={2} fillOpacity={1} fill="url(#colorPurchases)" />
+                <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} formatter={(val) => `₹${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`} />
+                <Tooltip contentStyle={{ background: '#0f172a', border: 'none', borderRadius: '8px', fontSize: '11px', color: '#fff' }} />
+                <Area type="monotone" name="Sales Revenue" dataKey="Sales" stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#revenueGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -162,46 +165,30 @@ const Overview = () => {
             </div>
           </div>
         </div>
+
+        {/* Brand Stock Volume Bar Chart */}
+        <div className="glass-panel p-6 rounded-xl lg:col-span-3 space-y-4">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Active Stock Count by Brand</h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={brandWiseStock} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.1} />
+                <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} />
+                <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ background: '#0f172a', border: 'none', borderRadius: '8px', fontSize: '11px', color: '#fff' }} />
+                <Bar dataKey="value" name="Devices in Stock" fill="#3B82F6" radius={[4, 4, 0, 0]}>
+                  {brandWiseStock?.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* 3. Recent Transactions Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Purchases */}
-        <div className="glass-panel p-6 rounded-xl overflow-hidden">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-white">Recent Trade-in Purchases</h3>
-            <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Inward Queue</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold">
-                  <th className="pb-3">Voucher #</th>
-                  <th className="pb-3">Seller</th>
-                  <th className="pb-3">Device Inwarded</th>
-                  <th className="pb-3 text-right">Price paid</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-                {recentPurchases?.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="py-6 text-center text-slate-400">No inward purchases recorded today</td>
-                  </tr>
-                ) : (
-                  recentPurchases?.map((p) => (
-                    <tr key={p._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                      <td className="py-3 font-semibold text-slate-900 dark:text-white">{p.purchaseNumber}</td>
-                      <td className="py-3">{p.customer?.fullName}</td>
-                      <td className="py-3 truncate max-w-[150px]">{p.device ? `${p.device.brand} ${p.device.model}` : 'N/A'}</td>
-                      <td className="py-3 text-right font-bold text-emerald-500">₹{p.purchasePrice.toLocaleString()}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 gap-6">
         {/* Recent Sales */}
         <div className="glass-panel p-6 rounded-xl overflow-hidden">
           <div className="flex justify-between items-center mb-4">

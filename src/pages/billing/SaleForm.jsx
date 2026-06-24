@@ -78,7 +78,8 @@ const SaleForm = () => {
   const subTotal = cart.reduce((acc, curr) => acc + curr.sellingPrice, 0);
   // GST calculation (18% inclusive in the selling price)
   const gstAmount = Math.round(subTotal * 0.18);
-  const finalTotal = Math.max(0, subTotal - (Number(discount) || 0));
+  const discountVal = Math.round(subTotal * ((Number(discount) || 0) / 100));
+  const finalTotal = Math.max(0, subTotal - discountVal);
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
@@ -113,7 +114,7 @@ const SaleForm = () => {
           price: item.sellingPrice,
         })),
         
-        discount: Number(discount) || 0,
+        discount: discountVal,
         paymentMethod,
       };
 
@@ -338,17 +339,27 @@ const SaleForm = () => {
 
             {/* Discount field */}
             <div className="space-y-1 pt-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Add Discount (INR)</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Add Discount (%)</label>
               <div className="relative">
                 <input
                   type="number"
                   placeholder="0"
+                  min="0"
+                  max="100"
                   value={discount || ''}
-                  onChange={(e) => setDiscount(e.target.value)}
+                  onChange={(e) => {
+                    const val = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                    setDiscount(val);
+                  }}
                   className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded p-1.5 pl-7 focus:outline-none font-bold"
                 />
-                <Tag className="absolute left-2 top-2 text-slate-400" size={13} />
+                <span className="absolute left-2.5 top-2 text-slate-400 font-bold text-xs">%</span>
               </div>
+              {Number(discount) > 0 && (
+                <div className="text-[10px] text-emerald-500 font-semibold mt-1">
+                  Discount Value: -₹{discountVal.toLocaleString()}
+                </div>
+              )}
             </div>
 
             {/* Payment selection */}

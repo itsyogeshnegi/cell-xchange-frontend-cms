@@ -85,6 +85,20 @@ const CustomerList = () => {
     setSubmitting(true);
     setErrorMsg('');
 
+    // Validation: make sure all required fields are filled
+    if (!form.fullName || !form.phone || !form.gender || !form.address || !form.aadhaarNumber || !form.panNumber) {
+      setErrorMsg('All fields (Name, Phone, Gender, Address, Aadhaar Number, PAN Number) are required except Alternate Phone and CRM Notes.');
+      setSubmitting(false);
+      return;
+    }
+
+    // Validation: make sure all required document files are present
+    if (!customerPhoto || !panImage || !aadhaarFront || !aadhaarBack) {
+      setErrorMsg('Customer Photo, PAN Image, Aadhaar Front, and Aadhaar Back document scans are all required.');
+      setSubmitting(false);
+      return;
+    }
+
     const formData = new FormData();
     Object.keys(form).forEach((key) => {
       formData.append(key, form[key]);
@@ -342,7 +356,7 @@ const CustomerList = () => {
 
                 {/* Gender */}
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gender</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gender *</label>
                   <select
                     value={form.gender}
                     onChange={(e) => setForm({ ...form, gender: e.target.value })}
@@ -381,9 +395,10 @@ const CustomerList = () => {
 
                 {/* Aadhaar Number */}
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Aadhaar Card Number</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Aadhaar Card Number *</label>
                   <input
                     type="text"
+                    required
                     placeholder="12-digit UID"
                     value={form.aadhaarNumber}
                     onChange={(e) => setForm({ ...form, aadhaarNumber: e.target.value })}
@@ -393,9 +408,10 @@ const CustomerList = () => {
 
                 {/* PAN Number */}
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PAN Card Number</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PAN Card Number *</label>
                   <input
                     type="text"
+                    required
                     placeholder="10-digit alphanumeric"
                     value={form.panNumber}
                     onChange={(e) => setForm({ ...form, panNumber: e.target.value })}
@@ -406,8 +422,9 @@ const CustomerList = () => {
 
               {/* Address */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Residential Address</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Residential Address *</label>
                 <textarea
+                  required
                   placeholder="Street details, Locality, City, PIN"
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -431,25 +448,25 @@ const CustomerList = () => {
               {/* Document Scans */}
               <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-850 pt-4">
                 <FileUploadField
-                  label="Customer Photo"
+                  label="Customer Photo *"
                   id="customer-photo-upload"
                   file={customerPhoto}
                   setFile={setCustomerPhoto}
                 />
                 <FileUploadField
-                  label="PAN Card Image"
+                  label="PAN Card Image *"
                   id="pan-image-upload"
                   file={panImage}
                   setFile={setPanImage}
                 />
                 <FileUploadField
-                  label="Aadhaar Card Front"
+                  label="Aadhaar Card Front *"
                   id="aadhaar-front-upload"
                   file={aadhaarFront}
                   setFile={setAadhaarFront}
                 />
                 <FileUploadField
-                  label="Aadhaar Card Back"
+                  label="Aadhaar Card Back *"
                   id="aadhaar-back-upload"
                   file={aadhaarBack}
                   setFile={setAadhaarBack}

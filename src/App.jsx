@@ -24,10 +24,8 @@ const InventoryList = lazy(() => import('./pages/inventory/InventoryList'));
 const CustomerList = lazy(() => import('./pages/customers/CustomerList'));
 const CustomerDetail = lazy(() => import('./pages/customers/CustomerDetail'));
 const SaleForm = lazy(() => import('./pages/billing/SaleForm'));
-const PurchaseForm = lazy(() => import('./pages/billing/PurchaseForm'));
 const CMSDashboard = lazy(() => import('./pages/cms/CMSDashboard'));
 const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'));
-const AnalyticsPage = lazy(() => import('./pages/analytics/AnalyticsPage'));
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 
 function App() {
@@ -56,9 +54,6 @@ function App() {
             <Route path="/admin/sales" element={<SaleForm />} />
           </Route>
 
-          <Route element={<Layout title="New Device Purchase Inward" />}>
-            <Route path="/admin/purchases" element={<PurchaseForm />} />
-          </Route>
 
           <Route element={<Layout title="CMS Website Editor" />}>
             <Route path="/admin/cms" element={<CMSDashboard />} />
@@ -68,9 +63,6 @@ function App() {
             <Route path="/admin/reports" element={<ReportsPage />} />
           </Route>
 
-          <Route element={<Layout title="Advanced Analytics Insights" />}>
-            <Route path="/admin/analytics" element={<AnalyticsPage />} />
-          </Route>
 
           <Route element={<Layout title="Global Store Settings" />}>
             <Route path="/admin/settings" element={<SettingsPage />} />

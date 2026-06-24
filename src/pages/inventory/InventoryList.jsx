@@ -21,6 +21,16 @@ import API from '../../utils/axios';
 import { openProtectedFile } from '../../utils/download';
 import { MultipleFileUploadField, ExcelFileUploadField } from '../../components/FileUpload';
 
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const backendHost = apiURL.replace('/api', '');
+  return `${backendHost}${url}`;
+};
+
 const InventoryList = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -38,6 +48,8 @@ const InventoryList = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState('');
   const [showCodeModal, setShowCodeModal] = useState(null); // stores code modal details ({ item })
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewTitle, setPreviewTitle] = useState('');
 
   // Form States for Add/Edit
   const [form, setForm] = useState({
@@ -355,19 +367,38 @@ const InventoryList = () => {
                   <tr key={item._id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors">
                     {/* Device Specs */}
                     <td className="py-4 px-6 font-medium">
-                      <div className="font-bold text-slate-900 dark:text-white text-sm">
-                        {item.brand} {item.model}
-                      </div>
-                      <div className="text-[10px] text-slate-450 mt-0.5 flex gap-2 capitalize">
-                        <span>Type: {item.productType}</span>
-                        <span>•</span>
-                        <span>Specs: {item.ram}GB / {item.storage}GB</span>
-                        {item.color && (
-                          <>
-                            <span>•</span>
-                            <span>Color: {item.color}</span>
-                          </>
+                      <div className="flex items-center gap-3">
+                        {item.images && item.images.length > 0 ? (
+                          <div 
+                            className="w-12 h-12 rounded-lg bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 overflow-hidden flex items-center justify-center shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
+                            onClick={() => {
+                              setPreviewImage(getImageUrl(item.images[0]));
+                              setPreviewTitle(`${item.brand} ${item.model}`);
+                            }}
+                          >
+                            <img src={getImageUrl(item.images[0])} alt={`${item.brand} ${item.model}`} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center shrink-0 text-slate-400 font-bold text-[9px] uppercase tracking-wider">
+                            No Img
+                          </div>
                         )}
+                        <div>
+                          <div className="font-bold text-slate-900 dark:text-white text-sm">
+                            {item.brand} {item.model}
+                          </div>
+                          <div className="text-[10px] text-slate-450 mt-0.5 flex gap-2 capitalize">
+                            <span>Type: {item.productType}</span>
+                            <span>•</span>
+                            <span>Specs: {item.ram}GB / {item.storage}GB</span>
+                            {item.color && (
+                              <>
+                                <span>•</span>
+                                <span>Color: {item.color}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     {/* IMEI / SN */}
@@ -872,6 +903,55 @@ const InventoryList = () => {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-250 dark:border-slate-800 w-full max-w-2xl overflow-hidden shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center">
+              <span className="font-bold text-slate-850 dark:text-white text-xs">{previewTitle}</span>
+              <button 
+                onClick={() => setPreviewImage(null)} 
+                className="text-slate-450 hover:text-slate-750 dark:hover:text-white font-bold"
+              >
+                Close
+              </button>
+            </div>
+            {/* Image Container */}
+            <div className="p-6 flex items-center justify-center bg-slate-100 dark:bg-slate-955 max-h-[70vh] overflow-hidden">
+              <img 
+                src={previewImage} 
+                alt={previewTitle} 
+                className="max-h-[60vh] max-w-full object-contain rounded-lg shadow-md"
+              />
+            </div>
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-slate-150 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+              <a
+                href={previewImage}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-primary-600 hover:bg-primary-500 text-white font-bold py-1.5 px-4 rounded-lg text-xs transition-colors shadow"
+              >
+                Open in New Tab
+              </a>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="bg-white dark:bg-slate-800 border border-slate-250 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-1.5 px-4 rounded-lg text-xs hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

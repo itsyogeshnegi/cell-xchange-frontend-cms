@@ -222,6 +222,7 @@ export const FileUploadField = ({
   accept = "image/*",
   maxSizeMB = 5,
   disabled = false,
+  onRemove,
 }) => {
   const [preview, setPreview] = useState(null);
   const [dragActive, setDragActive] = useState(false);
@@ -306,7 +307,7 @@ export const FileUploadField = ({
           onChange={handleChange}
         />
 
-        {preview ? (
+        {preview && file ? (
           <div className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-2 shadow-sm transition-all hover:shadow-md flex items-center gap-3">
             <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 flex-shrink-0 bg-slate-50 dark:bg-slate-950">
               <img
@@ -328,10 +329,10 @@ export const FileUploadField = ({
 
             <div className="flex-1 min-w-0">
               <p className="text-[10px] text-slate-700 dark:text-slate-300 font-bold truncate leading-tight">
-                {typeof file === 'string' ? file.split('/').pop() : file.name}
+                {file ? (typeof file === 'string' ? file.split('/').pop() : file.name) : ''}
               </p>
               <p className="text-[9px] text-slate-400 mt-0.5">
-                {typeof file === 'string' ? 'Cloud stored' : `${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                {file ? (typeof file === 'string' ? 'Cloud stored' : `${(file.size / 1024 / 1024).toFixed(2)} MB`) : ''}
               </p>
             </div>
 
@@ -341,6 +342,7 @@ export const FileUploadField = ({
                 onClick={() => {
                   setFile(null);
                   if (inputRef.current) inputRef.current.value = "";
+                  if (onRemove) onRemove();
                 }}
                 className="p-1.5 bg-slate-100 hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 rounded-lg transition-colors border border-slate-200/40 dark:bg-slate-800/40 dark:border-slate-750/30"
                 title="Remove image"

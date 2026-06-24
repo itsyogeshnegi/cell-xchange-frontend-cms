@@ -42,10 +42,12 @@ const SettingsPage = () => {
     invoiceTerms: '',
   });
   const [logoFile, setLogoFile] = useState(null);
+  const [deleteLogo, setDeleteLogo] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
   // New staff form
   const [staffForm, setStaffForm] = useState({
+    name: '',
     email: '',
     password: '',
     role: 'staff',
@@ -53,6 +55,29 @@ const SettingsPage = () => {
   const [staffLoading, setStaffLoading] = useState(false);
   const [staffSuccess, setStaffSuccess] = useState(false);
   const [staffError, setStaffError] = useState('');
+
+  // 2. Fetch users for list (only if super admin)
+  const { data: usersList } = useQuery({
+    queryKey: ['usersList'],
+    queryFn: async () => {
+      if (!isSuperAdmin) return [];
+      const res = await API.get('/auth/users');
+      return res.data;
+    },
+    enabled: isSuperAdmin,
+  });
+
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: async ({ userId, isActive }) => {
+      await API.patch(`/auth/users/${userId}/status`, { isActive });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['usersList']);
+    },
+    onError: (err) => {
+      alert(err.response?.data?.message || 'Failed to update user status.');
+    },
+  });
 
   const handleSaveSettings = async (e) => {
     e.preventDefault();
@@ -72,11 +97,17 @@ const SettingsPage = () => {
       formData.append('logo', logoFile);
     }
 
+    if (deleteLogo) {
+      formData.append('removeLogo', 'true');
+    }
+
     try {
       await API.put('/settings', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       queryClient.invalidateQueries(['shopSettings']);
+      setLogoFile(null);
+      setDeleteLogo(false);
       alert('Shop metadata settings saved.');
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to save settings.');
@@ -94,7 +125,8 @@ const SettingsPage = () => {
     try {
       await API.post('/auth/register', staffForm);
       setStaffSuccess(true);
-      setStaffForm({ email: '', password: '', role: 'staff' });
+      setStaffForm({ name: '', email: '', password: '', role: 'staff' });
+      queryClient.invalidateQueries(['usersList']);
     } catch (err) {
       setStaffError(err.response?.data?.message || 'Failed to register new staff user.');
     } finally {
@@ -181,8 +213,17 @@ const SettingsPage = () => {
             <FileUploadField
               label="Shop Logo (A4/Thermal headers)"
               id="shop-logo-upload"
-              file={logoFile || settings?.logoUrl}
-              setFile={setLogoFile}
+              file={deleteLogo ? null : (logoFile || settings?.logoUrl)}
+              setFile={(file) => {
+                setLogoFile(file);
+                if (file) {
+                  setDeleteLogo(false);
+                }
+              }}
+              onRemove={() => {
+                setLogoFile(null);
+                setDeleteLogo(true);
+              }}
               disabled={!isAdmin}
             />
           </div>
@@ -240,7 +281,8 @@ const SettingsPage = () => {
             <p className="text-[10px]">Only the Super Admin can register new users.</p>
           </div>
         ) : (
-          <form onSubmit={handleRegisterStaff} className="space-y-4">
+          <>
+            <form onSubmit={handleRegisterStaff} className="space-y-4">
             {staffSuccess && (
               <div className="bg-emerald-500/10 text-emerald-500 p-2.5 rounded border border-emerald-500/15 flex items-center gap-1.5 font-bold">
                 <Check size={14} />
@@ -253,6 +295,18 @@ const SettingsPage = () => {
                 {staffError}
               </div>
             )}
+
+            <div className="space-y-1">
+              <label className="font-bold text-slate-500">Operator Name</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Aman Sharma"
+                value={staffForm.name}
+                onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-850 rounded p-1.5 focus:outline-none"
+              />
+            </div>
 
             <div className="space-y-1">
               <label className="font-bold text-slate-500">Operator Email</label>
@@ -299,7 +353,47 @@ const SettingsPage = () => {
               {staffLoading ? 'Registering...' : 'Register Operator'}
             </button>
           </form>
-        )}
+
+          {/* List of existing staff users */}
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
+            <h4 className="font-bold text-slate-805 dark:text-white mb-3">Existing User Accounts</h4>
+            {usersList && usersList.length > 0 ? (
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {usersList.map((u) => (
+                  <div key={u._id} className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 flex justify-between items-center">
+                    <div className="space-y-0.5">
+                      <div className="font-bold text-slate-900 dark:text-white text-[11px]">{u.name}</div>
+                      <div className="text-[10px] text-slate-400">{u.email}</div>
+                      <div className="inline-block text-[9px] uppercase tracking-wide px-1.5 py-0.5 font-bold rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                        {u.role}
+                      </div>
+                    </div>
+                    <div>
+                      {u._id === user._id ? (
+                        <span className="text-[10px] text-slate-400 italic">You</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => toggleUserStatusMutation.mutate({ userId: u._id, isActive: !u.isActive })}
+                          className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
+                            u.isActive
+                              ? 'bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/40 text-emerald-500 border border-emerald-500/20'
+                              : 'bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/40 text-rose-500 border border-rose-500/20'
+                          }`}
+                        >
+                          {u.isActive ? 'Active' : 'Disabled'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-[10px] text-slate-400">No other users registered.</div>
+            )}
+          </div>
+        </>
+      )}
       </div>
     </div>
   );
