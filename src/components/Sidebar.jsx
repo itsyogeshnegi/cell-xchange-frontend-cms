@@ -13,7 +13,7 @@ import {
   LogOut,
   X,
 } from 'lucide-react';
-
+import logoImg from '../assets/cell-xchange-logo.jpeg';
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const { user, logout } = useAuthStore();
@@ -37,8 +37,8 @@ const Sidebar = ({ isOpen, onClose }) => {
     <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col h-screen fixed left-0 top-0 border-r border-slate-800 z-40 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
       {/* Brand Header */}
       <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
-        <span className="text-xl font-bold font-sans tracking-wide text-white flex items-center gap-2">
-          <span className="bg-primary-500 text-white p-1 rounded-lg text-sm">CX</span>
+        <span className="text-xl font-bold font-sans tracking-wide text-white flex items-center gap-2.5">
+          <img src={logoImg} alt="Cell Xchange Logo" className="w-8 h-8 rounded-lg object-cover" />
           Cell Xchange
         </span>
         <button

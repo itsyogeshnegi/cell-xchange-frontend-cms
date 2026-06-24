@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Lock, Mail, Smartphone, ArrowRight, ShieldAlert } from 'lucide-react';
 import API from '../../utils/axios';
+import logoImg from '../../assets/cell-xchange-logo.jpeg';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -46,10 +47,8 @@ const Login = () => {
       {/* Main Glassmorphic Card */}
       <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 p-8 rounded-2xl shadow-2xl z-10 transition-all duration-300">
         {/* Branding header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-3 bg-primary-600/10 rounded-xl border border-primary-500/20 text-primary-400 mb-3">
-            <Smartphone size={32} />
-          </div>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img src={logoImg} alt="Cell Xchange Logo" className="w-16 h-16 rounded-2xl object-cover mb-4 border border-slate-800 shadow-md" />
           <h2 className="text-2xl font-black text-white tracking-tight">Cell Xchange</h2>
           <p className="text-xs text-slate-400 mt-1.5 font-medium">CMS, CRM & Billing Portal</p>
         </div>

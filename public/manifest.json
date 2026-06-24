@@ -3,9 +3,9 @@
   "name": "Cell Xchange CMS & Billing Portal",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
+      "src": "/cell-xchange-logo.jpeg",
+      "type": "image/jpeg",
+      "sizes": "192x192 512x512"
     }
   ],
   "start_url": "/",

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import API from '../../utils/axios';
 import { useAuthStore } from '../../store/authStore';
+import logoImg from '../../assets/cell-xchange-logo.jpeg';
 
 const PublicHome = () => {
   const { isAuthenticated } = useAuthStore();
@@ -47,8 +48,8 @@ const PublicHome = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-primary-500 selection:text-white">
       {/* 1. Header Navigation */}
       <header className="sticky top-0 z-40 bg-slate-950/70 backdrop-blur-md border-b border-slate-900 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center font-black text-white text-base">C</div>
+        <div className="flex items-center gap-2.5">
+          <img src={logoImg} alt="Cell Xchange Logo" className="w-8 h-8 rounded-lg object-cover" />
           <span className="font-black text-white text-lg tracking-tight">Cell Xchange</span>
         </div>
 

@@ -12,6 +12,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import API from '../../utils/axios';
+import logoImg from '../../assets/cell-xchange-logo.jpeg';
 
 const PublicCatalog = () => {
   // Search / Filters
@@ -47,14 +48,15 @@ const PublicCatalog = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-primary-500 selection:text-white">
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 bg-slate-955/80 backdrop-blur-md border-b border-slate-900 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <Link
             to="/"
             className="p-1.5 hover:bg-slate-900 rounded-lg text-slate-400 hover:text-white transition-colors"
           >
             <ChevronLeft size={16} />
           </Link>
-          <span className="font-black text-white text-base tracking-tight">Public Catalog Catalog</span>
+          <img src={logoImg} alt="Cell Xchange Logo" className="w-8 h-8 rounded-lg object-cover" />
+          <span className="font-black text-white text-base tracking-tight">Cell Xchange</span>
         </div>
         <Link
           to="/"
